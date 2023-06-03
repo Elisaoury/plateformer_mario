@@ -1,7 +1,11 @@
+import {GameOver} from './game_over.js';
+
 export class zone_1 extends Phaser.Scene {
+
 
     constructor() {
         super("zone_1")
+        this.game_over = false
     }
 
     preload() {
@@ -15,6 +19,13 @@ export class zone_1 extends Phaser.Scene {
         this.load.image('herbe', 'assets/herbe.png');
         this.load.image("book", "assets/ui.png");
         this.load.image("menu", "assets/menu.png");
+        this.load.spritesheet('ennemi', 'assets/renard.png',
+            { frameWidth: 1400, frameHeight: 700});
+        
+            
+        
+       
+
 
 
         // chargement tuiles de jeu
@@ -37,7 +48,7 @@ export class zone_1 extends Phaser.Scene {
 
     create() {
 
-
+        this.game_over = false;
 
         // tiled
         this.carteDuNiveau = this.add.tilemap("map");
@@ -62,11 +73,17 @@ export class zone_1 extends Phaser.Scene {
        
 
         //personnage
+        
+        this.ennemy= this.physics.add.sprite(200, 2800, 'ennemi').setScale(0.07);
         this.player = this.physics.add.sprite(32,2800, 'perso_droite').setScale(0.4);
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
         this.physics.add.collider(this.player, this.platforms);
-
+        this.ennemy.setBounce(0.2);
+        this.ennemy.setCollideWorldBounds(true);
+      
+        
+     
     // collectible herbe 
 
         this.scoreText = this.add.text(355,285,'0',{fontSize:'32px',fill:'#000'});
@@ -113,6 +130,8 @@ export class zone_1 extends Phaser.Scene {
         this.physics.add.collider(this.player, this.calque_plateforme);
 
         this.physics.add.collider(this.herbe, this.calque_plateforme);
+        this.physics.add.collider(this.ennemy, this.calque_plateforme);
+        
         // clavier 
 
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -154,7 +173,7 @@ export class zone_1 extends Phaser.Scene {
         });
         this.anims.create({
             key: 'jump',
-            frames: this.anims.generateFrameNumbers('perso_saut', { start: 0, end: 4 }),
+            frames: this.anims.generateFrameNumbers('perso_saut', { start: 0 }),
             frameRate: 10,
             repeat: -1
         });
@@ -171,13 +190,30 @@ export class zone_1 extends Phaser.Scene {
             repeat: -1
         });
     
+        this.anims.create({
+            key: 'ennemi_left',
+            frames: this.anims.generateFrameNumbers('ennemi', {start:0,end:3}),
+            frameRate: 7,
+            repeat: -1
+        });
 
+        this.anims.create({
+            key: 'ennemi_right',
+            frames: this.anims.generateFrameNumbers('ennemi', {start:4,end:7}),
+            frameRate: 7,
+            repeat: -1
+        });
+
+       
     }
 
 
     update() {
 
-      
+        if (this.game_over) {return;}
+        //console.log(this.player.x);
+        //console.log(this.player.y);
+
         this.keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
         this.keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
@@ -209,13 +245,35 @@ export class zone_1 extends Phaser.Scene {
             this.scoreText.setVisible(true)
         }
         
+
+        if (this.ennemy) {
+            if (this.ennemy.x <810) {
+              this.ennemy.setVelocityX(80);
+              this.ennemy.anims.play('ennemi_right', true);
+            } 
+            else if (this.ennemy.x > 1200) {
+              this.ennemy.setVelocityX(-80);
+              this.ennemy.anims.play('ennemi_left', true);
+            }
+        }
+
+        if (this.physics.overlap(this.player, this.ennemy)) {
+            console.log("klkjdlkgj");
+                    this.killplayer();
+        }
+
+
+    
+
+
+
     }
 
 
     collectHerbe(player, herbe){
-        herbe.disableBody(true, true); // l’étoile disparaît
-        this.score += 1  ; //augmente le score de 10
-        this.scoreText.setText(this.score); //met à jour l’affichage du score
+        herbe.disableBody(true, true); 
+        this.score += 1  ; 
+        this.scoreText.setText(this.score);
         }
 
     leClick(){
@@ -230,4 +288,10 @@ export class zone_1 extends Phaser.Scene {
         console.log(this.menuOpen);
     }
 
+    killplayer(){
+        this.game_over = true;
+        console.log("ça marche");
+        this.scene.start("GameOver")
+    }
+   
 }
