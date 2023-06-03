@@ -154,7 +154,7 @@ export class zone_1 extends Phaser.Scene {
         // animation personnage
         this.anims.create({
             key: 'left',
-            frames: this.anims.generateFrameNumbers('perso_droite', { start: 1, end: 9 }),
+            frames: this.anims.generateFrameNumbers('perso_gauche', { start: 1, end: 9 }),
             frameRate: 10,
             repeat: -1
         });
